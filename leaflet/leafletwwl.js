@@ -37,14 +37,22 @@ window.onload = function () {
   });
 
 
-  var map = L.map('wwl')
-  .fitBounds(AFL.getBounds())
+  var map = L.map('wwl', {
+    // Add layers that will be shown at the first place
+    layers: [AFL, CIO]
+  }).fitBounds(AFL.getBounds())
   .fitBounds(CIO.getBounds());
 
+  // Add upper right layer controls
+  var featureMaps = {
+    "AFL": AFL,
+    "CIO": CIO
+  };
+  L.control.layers(null, featureMaps).addTo(map);
+
   basemap.addTo(map);
-  AFL.addTo(map);
-  CIO.addTo(map);
-  })
+  
+ })
 
 };
 
