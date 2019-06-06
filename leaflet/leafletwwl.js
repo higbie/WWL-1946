@@ -1,3 +1,4 @@
+// ASYNC $.getjson might fail the loading of the map at the first time
 window.onload = function () {
   var basemap = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -57,7 +58,8 @@ window.onload = function () {
     CHORO.resetStyle(e.target);
   } 
 
-  // Begin layer creation
+  // Begin choropleth map creation
+  // TODO: replace testsample.geojson with real data and rename it afterwards
   $.getJSON("testsample.geojson", function(choro_map) {
     CHORO = L.geoJson(choro_map, {
       style: style,
@@ -96,7 +98,7 @@ window.onload = function () {
   });
 
   // Add upper right layer controls
-  // var featureMap = L.layerGroup([AFL, CIO]);
+  var featureMap = L.layerGroup([AFL, CIO]);
   var featureMaps = {
     "AFL": AFL,
     "CIO": CIO,
@@ -104,8 +106,7 @@ window.onload = function () {
   };
 
   var map = L.map('wwl', {
-    // Add layers that will be shown at the first place, asychronous getJson will cause this to fail at the first time
-    // layers: featureMap
+    layers: featureMap
   }).fitBounds(AFL.getBounds())
   .fitBounds(CIO.getBounds());
 
