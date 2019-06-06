@@ -12,7 +12,66 @@ window.onload = function () {
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 });
- //define variable before calling geojson
+
+  // Define choropleth map, get from leaflet choropleth example
+  var CHORO;
+  // get color depending on population density value
+  function getColor(d) {
+    return d > 1000 ? '#800026' :
+      d > 500  ? '#BD0026' :
+      d > 200  ? '#E31A1C' :
+      d > 100  ? '#FC4E2A' :
+      d > 50   ? '#FD8D3C' :
+      d > 20   ? '#FEB24C' :
+      d > 10   ? '#FED976' :
+            '#FFEDA0';
+  }
+
+  function style(feature) {
+    return {
+      weight: 2,
+      opacity: 1,
+      color: 'white',
+      dashArray: '3',
+      fillOpacity: 0.7,
+      fillColor: getColor(feature.properties.density)
+    };
+  }
+
+  function highlightFeature(e) {
+    var layer = e.target;
+
+    layer.setStyle({
+        weight: 5,
+        color: '#666',
+        dashArray: '',
+        fillOpacity: 0.7
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        layer.bringToFront();
+    }
+  }
+
+  function resetHighlight(e) {
+    CHORO.resetStyle(e.target);
+  } 
+
+  // Begin layer creation
+  $.getJSON("testsample.geojson", function(choro_map) {
+    CHORO = L.geoJson(choro_map, {
+      style: style,
+      onEachFeature: function (feature, layer) {
+        layer.on({
+          mouseover: highlightFeature,
+          mouseout: resetHighlight
+        });
+      }
+    });
+  });
+
+
+  //define variable before calling geojson
   var AFL;
   $.getJSON("wwlafl.geojson", function(afl_map) {
 
@@ -36,22 +95,24 @@ window.onload = function () {
     }
   });
 
+  // Add upper right layer controls
+  // var featureMap = L.layerGroup([AFL, CIO]);
+  var featureMaps = {
+    "AFL": AFL,
+    "CIO": CIO,
+    "choropleth": CHORO
+  };
 
   var map = L.map('wwl', {
-    // Add layers that will be shown at the first place
-    layers: [AFL, CIO]
+    // Add layers that will be shown at the first place, asychronous getJson will cause this to fail at the first time
+    // layers: featureMap
   }).fitBounds(AFL.getBounds())
   .fitBounds(CIO.getBounds());
 
-  // Add upper right layer controls
-  var featureMaps = {
-    "AFL": AFL,
-    "CIO": CIO
-  };
-  L.control.layers(null, featureMaps).addTo(map);
+  var control = L.control.layers(null, featureMaps);
 
   basemap.addTo(map);
-  
+  control.addTo(map);
  })
 
 };
